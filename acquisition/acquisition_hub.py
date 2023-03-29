@@ -22,7 +22,7 @@ class AcquisitionHub(Node):
 		param_descriptor = ParameterDescriptor(description = "Sets the subscribed Odometry topic name.")
 		self.declare_parameter("odom_topic", "/wheel/odometry", param_descriptor)
 		param_descriptor = ParameterDescriptor(description = "Sets the acquisition server address.")
-		self.declare_parameter("server_address", "192.168.1.83", param_descriptor)
+		self.declare_parameter("server_address", "192.168.1.79", param_descriptor)
 		param_descriptor = ParameterDescriptor(description = "Sets the acquisition server port.")
 		self.declare_parameter("server_port", 25003, param_descriptor)
 
@@ -52,23 +52,23 @@ class AcquisitionHub(Node):
 		# Connect sensors through acquisition hub
 		try:
 			acq_serial = serial.Serial(
-			port = "COM3",
+			port = "/dev/ttymxc2",
 			baudrate = 115200,
 			bytesize = serial.EIGHTBITS,
 			stopbits = serial.STOPBITS_ONE,
 			parity = serial.PARITY_NONE)
 		except serial.SerialException as e:
-			print("could not open serial port '{}': {}".format("COM4", e))
+			print("could not open serial port '{}': {}".format("/dev/ttymxc2", e))
 			acq_serial = None
 		try:
 			actuator_serial = serial.Serial(
-			port = "COM13",
+			port = "/dev/ttymxc1",
 			baudrate = 115200,
 			bytesize = serial.EIGHTBITS,
 			stopbits = serial.STOPBITS_ONE,
 			parity = serial.PARITY_NONE)
 		except serial.SerialException as e:
-			print("could not open serial port '{}': {}".format("COM13", e))
+			print("could not open serial port '{}': {}".format("/dev/ttymxc1", e))
 			actuator_serial = None
 
 		self.acq_air = AcquisitionController.AirSensor(acq_serial)
@@ -105,7 +105,9 @@ class AcquisitionHub(Node):
 
 		# Generate new coordinate, for testing purpose only
 		self.sensor_data.local_coordinate_x -= 2
-		self.sensor_data.local_coordinate_y = 0
+		if self.sensor_data.local_coordinate_x < -60:
+			self.sensor_data.local_coordinate_x = 0
+			self.sensor_data.local_coordinate_y += 2
 		self.sensor_data.local_coordinate_z = 0
 
 		# Get new values from sensors
